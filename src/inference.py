@@ -7,16 +7,14 @@ from config import *
 
 parser = argparse.ArgumentParser(description='Punctuation restoration inference on text file')
 parser.add_argument('--cuda', default=True, type=lambda x: (str(x).lower() == 'true'), help='use cuda if available')
-parser.add_argument('--pretrained-model', default='xlm-roberta-large', type=str, help='pretrained language model')
+parser.add_argument('--pretrained-model', default='bert-base-uncased', type=str, help='pretrained language model')
 parser.add_argument('--lstm-dim', default=-1, type=int,
                     help='hidden dimension in LSTM layer, if -1 is set equal to hidden dimension in language model')
-parser.add_argument('--use-crf', default=False, type=lambda x: (str(x).lower() == 'true'),
-                    help='whether to use CRF layer or not')
-parser.add_argument('--in-file', default='data/test_en.txt', type=str, help='path to inference file')
-parser.add_argument('--weight-path', default='xlm-roberta-large.pt', type=str, help='model weight path')
+parser.add_argument('--user-input', default='Hello who goes there', type=str, help='path to inference file')
+parser.add_argument('--weight-path', default='out/weights.pt', type=str, help='model weight path')
 parser.add_argument('--sequence-length', default=256, type=int,
                     help='sequence length to use when preparing dataset (default 256)')
-parser.add_argument('--out-file', default='data/test_en_out.txt', type=str, help='output file location')
+parser.add_argument('--out-file', default='data/inference-result.txt', type=str, help='output file location')
 
 args = parser.parse_args()
 
@@ -29,10 +27,7 @@ model_save_path = args.weight_path
 
 # Model
 device = torch.device('cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu')
-if args.use_crf:
-    deep_punctuation = DeepPunctuationCRF(args.pretrained_model, freeze_bert=False, lstm_dim=args.lstm_dim)
-else:
-    deep_punctuation = DeepPunctuation(args.pretrained_model, freeze_bert=False, lstm_dim=args.lstm_dim)
+deep_punctuation = DeepPunctuation(args.pretrained_model, freeze_bert=False, lstm_dim=args.lstm_dim)
 deep_punctuation.to(device)
 
 
@@ -40,8 +35,7 @@ def inference():
     deep_punctuation.load_state_dict(torch.load(model_save_path))
     deep_punctuation.eval()
 
-    with open(args.in_file, 'r', encoding='utf-8') as f:
-        text = f.read()
+    text = args.user_input
     text = re.sub(r"[,:\-–.!;?]", '', text)
     words_original_case = text.split()
     words = text.lower().split()
