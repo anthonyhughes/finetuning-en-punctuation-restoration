@@ -36,6 +36,9 @@ def inference():
     deep_punctuation.eval()
 
     text = args.user_input
+    print('Running inference')
+    print(text)
+
     text = re.sub(r"[,:\-–.!;?]", '', text)
     words_original_case = text.split()
     words = text.lower().split()
