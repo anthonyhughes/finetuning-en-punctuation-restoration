@@ -35,7 +35,7 @@ def inference():
     deep_punctuation.load_state_dict(torch.load(model_save_path))
     deep_punctuation.eval()
 
-    with open(args.in_file, 'r', encoding='utf-8') as f:
+    with open(args.user_input, 'r', encoding='utf-8') as f:
         text = f.read()
     text = re.sub(r"[,:\-–.!;?]", '', text)
     words_original_case = text.split()
