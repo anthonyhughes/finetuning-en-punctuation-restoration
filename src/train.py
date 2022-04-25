@@ -39,9 +39,7 @@ val_set = Dataset(os.path.join(args.data_path, 'dev2012'), tokenizer=tokenizer, 
                   token_style=token_style, is_train=False)
 test_set_ref = Dataset(os.path.join(args.data_path, 'test2011'), tokenizer=tokenizer, sequence_len=sequence_len,
                        token_style=token_style, is_train=False)
-test_set_asr = Dataset(os.path.join(args.data_path, 'test2011asr'), tokenizer=tokenizer, sequence_len=sequence_len,
-                       token_style=token_style, is_train=False)
-test_set = [val_set, test_set_ref, test_set_asr]
+test_set = [val_set, test_set_ref]
 
 # Data Loaders
 data_loader_params = {
