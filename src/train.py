@@ -33,11 +33,11 @@ sequence_len = args.sequence_length
 aug_type = args.augment_type
 
 # Datasets
-train_set = Dataset(os.path.join(args.data_path, 'train2012'), tokenizer=tokenizer, sequence_len=sequence_len,
+train_set = Dataset(os.path.join(args.data_path, 'train-punct-data'), tokenizer=tokenizer, sequence_len=sequence_len,
                     token_style=token_style, is_train=True, augment_rate=ar, augment_type=aug_type)
-val_set = Dataset(os.path.join(args.data_path, 'dev2012'), tokenizer=tokenizer, sequence_len=sequence_len,
+val_set = Dataset(os.path.join(args.data_path, 'val-punct-data'), tokenizer=tokenizer, sequence_len=sequence_len,
                   token_style=token_style, is_train=False)
-test_set_ref = Dataset(os.path.join(args.data_path, 'test2011'), tokenizer=tokenizer, sequence_len=sequence_len,
+test_set_ref = Dataset(os.path.join(args.data_path, 'test-punct-data'), tokenizer=tokenizer, sequence_len=sequence_len,
                        token_style=token_style, is_train=False)
 test_set = [val_set, test_set_ref]
 
