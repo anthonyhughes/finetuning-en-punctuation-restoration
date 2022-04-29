@@ -5,9 +5,8 @@ import numpy as np
 
 import argparse
 from dataset import Dataset
-from model import DeepPunctuation, DeepPunctuationCRF
+from model import DeepPunctuation
 from config import *
-
 
 parser = argparse.ArgumentParser(description='Punctuation restoration test')
 parser.add_argument('--cuda', default=True, type=lambda x: (str(x).lower() == 'true'), help='use cuda if available')
@@ -22,7 +21,6 @@ parser.add_argument('--batch-size', default=8, type=int, help='batch size (defau
 parser.add_argument('--save-path', default='out/', type=str, help='model and log save directory')
 
 args = parser.parse_args()
-
 
 # tokenizer
 tokenizer = MODELS[args.pretrained_model][1].from_pretrained(args.pretrained_model)
@@ -63,9 +61,9 @@ def test(data_loader):
     num_iteration = 0
     deep_punctuation.eval()
     # +1 for overall result
-    tp = np.zeros(1+len(punctuation_dict), dtype=np.int)
-    fp = np.zeros(1+len(punctuation_dict), dtype=np.int)
-    fn = np.zeros(1+len(punctuation_dict), dtype=np.int)
+    tp = np.zeros(1 + len(punctuation_dict), dtype=np.int)
+    fp = np.zeros(1 + len(punctuation_dict), dtype=np.int)
+    fn = np.zeros(1 + len(punctuation_dict), dtype=np.int)
     cm = np.zeros((len(punctuation_dict), len(punctuation_dict)), dtype=np.int)
     correct = 0
     total = 0
@@ -98,11 +96,11 @@ def test(data_loader):
     tp[-1] = np.sum(tp[1:])
     fp[-1] = np.sum(fp[1:])
     fn[-1] = np.sum(fn[1:])
-    precision = tp/(tp+fp)
-    recall = tp/(tp+fn)
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
     f1 = 2 * precision * recall / (precision + recall)
 
-    return precision, recall, f1, correct/total, cm
+    return precision, recall, f1, correct / total, cm
 
 
 def run():
@@ -110,7 +108,7 @@ def run():
     for i in range(len(test_loaders)):
         precision, recall, f1, accuracy, cm = test(test_loaders[i])
         log = test_files[i] + '\n' + 'Precision: ' + str(precision) + '\n' + 'Recall: ' + str(recall) + '\n' + \
-            'F1 score: ' + str(f1) + '\n' + 'Accuracy:' + str(accuracy) + '\n' + 'Confusion Matrix' + str(cm) + '\n'
+              'F1 score: ' + str(f1) + '\n' + 'Accuracy:' + str(accuracy) + '\n' + 'Confusion Matrix' + str(cm) + '\n'
         print(log)
         with open(log_path, 'a') as f:
             f.write(log)
