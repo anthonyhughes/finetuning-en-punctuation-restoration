@@ -11,7 +11,7 @@ from config import *
 
 parser = argparse.ArgumentParser(description='Punctuation restoration test')
 parser.add_argument('--cuda', default=True, type=lambda x: (str(x).lower() == 'true'), help='use cuda if available')
-parser.add_argument('--pretrained-model', default='roberta-large', type=str, help='pretrained language model')
+parser.add_argument('--pretrained-model', default='bert-base-uncased', type=str, help='pretrained language model')
 parser.add_argument('--lstm-dim', default=-1, type=int,
                     help='hidden dimension in LSTM layer, if -1 is set equal to hidden dimension in language model')
 parser.add_argument('--data-path', default='data/test', type=str, help='path to test datasets')
@@ -31,8 +31,11 @@ token_style = MODELS[args.pretrained_model][3]
 test_files = os.listdir(args.data_path)
 test_set = []
 for file in test_files:
-    test_set.append(Dataset(os.path.join(args.data_path, file), tokenizer=tokenizer, sequence_len=args.sequence_length,
-                            token_style=token_style, is_train=False))
+    test_set.append(Dataset(os.path.join(args.data_path, file),
+                            tokenizer=tokenizer,
+                            sequence_len=args.sequence_length,
+                            token_style=token_style,
+                            is_train=False))
 
 # Data Loaders
 data_loader_params = {

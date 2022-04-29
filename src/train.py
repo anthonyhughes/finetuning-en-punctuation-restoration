@@ -33,6 +33,7 @@ sequence_len = args.sequence_length
 aug_type = args.augment_type
 
 # Datasets
+print('Loading datasets')
 train_set = Dataset(os.path.join(args.data_path, 'train-punct-data'), tokenizer=tokenizer, sequence_len=sequence_len,
                     token_style=token_style, is_train=True, augment_rate=ar, augment_type=aug_type)
 val_set = Dataset(os.path.join(args.data_path, 'val-punct-data'), tokenizer=tokenizer, sequence_len=sequence_len,
@@ -41,16 +42,18 @@ test_set_ref = Dataset(os.path.join(args.data_path, 'test-punct-data'), tokenize
                        token_style=token_style, is_train=False)
 test_set = [val_set, test_set_ref]
 
+
 # Data Loaders
 data_loader_params = {
     'batch_size': args.batch_size,
     'shuffle': True,
-    'num_workers': 1
+    'num_workers': 2
 }
 
 train_loader = torch.utils.data.DataLoader(train_set, **data_loader_params)
 val_loader = torch.utils.data.DataLoader(val_set, **data_loader_params)
 test_loaders = [torch.utils.data.DataLoader(x, **data_loader_params) for x in test_set]
+print('Datasets loaded')
 
 # logs
 os.makedirs(args.save_path, exist_ok=True)
