@@ -40,7 +40,7 @@ for file in test_files:
 data_loader_params = {
     'batch_size': args.batch_size,
     'shuffle': False,
-    'num_workers': 0
+    'num_workers': 2
 }
 
 test_loaders = [torch.utils.data.DataLoader(x, **data_loader_params) for x in test_set]
