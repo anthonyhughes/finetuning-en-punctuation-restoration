@@ -13,7 +13,8 @@ parser.add_argument('--cuda', default=True, type=lambda x: (str(x).lower() == 't
 parser.add_argument('--pretrained-model', default='bert-base-uncased', type=str, help='pretrained language model')
 parser.add_argument('--lstm-dim', default=-1, type=int,
                     help='hidden dimension in LSTM layer, if -1 is set equal to hidden dimension in language model')
-parser.add_argument('--data-path', default='data/test', type=str, help='path to test datasets')
+parser.add_argument('--data-path', default='data/', type=str, help='path to test datasets')
+parser.add_argument('--test-set', default='test-punct-data', type=str, help='test dataset')
 parser.add_argument('--weight-path', default='out/weights.pt', type=str, help='model weight path')
 parser.add_argument('--sequence-length', default=256, type=int,
                     help='sequence length to use when preparing dataset (default 256)')
@@ -26,7 +27,7 @@ args = parser.parse_args()
 tokenizer = MODELS[args.pretrained_model][1].from_pretrained(args.pretrained_model)
 token_style = MODELS[args.pretrained_model][3]
 
-test_files = os.listdir(args.data_path)
+test_files = [args.test_set]
 test_set = []
 for file in test_files:
     test_set.append(Dataset(os.path.join(args.data_path, file),
