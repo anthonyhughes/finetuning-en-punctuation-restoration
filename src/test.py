@@ -27,6 +27,7 @@ args = parser.parse_args()
 tokenizer = MODELS[args.pretrained_model][1].from_pretrained(args.pretrained_model)
 token_style = MODELS[args.pretrained_model][3]
 
+print('Loading datasets')
 test_files = [args.test_set]
 test_set = []
 for file in test_files:
@@ -44,6 +45,7 @@ data_loader_params = {
 }
 
 test_loaders = [torch.utils.data.DataLoader(x, **data_loader_params) for x in test_set]
+print('Loading complete')
 
 # logs
 model_save_path = args.weight_path
