@@ -31,6 +31,14 @@ deep_punctuation = DeepPunctuation(args.pretrained_model, freeze_bert=False, lst
 deep_punctuation.to(device)
 
 
+def infer_nothing(word):
+    return word
+
+
+def to_titlecase(word):
+    return word.title()
+
+
 def inference():
     deep_punctuation.load_state_dict(torch.load(model_save_path))
     deep_punctuation.eval()
@@ -45,7 +53,8 @@ def inference():
     sequence_len = args.sequence_length
     result = ""
     decode_idx = 0
-    punctuation_map = {0: '', 1: ',', 2: '.'}
+    punctuation_map = {0: '', 1: ',', 2: '.', 3: '.', 4: ','}
+    function_map = {0: infer_nothing, 1: infer_nothing, 2: infer_nothing, 3: to_titlecase, 4: to_titlecase}
 
     while word_pos < len(words):
         x = [TOKEN_IDX[token_style]['START_SEQ']]
@@ -83,7 +92,11 @@ def inference():
 
         for i in range(y_mask.shape[0]):
             if y_mask[i] == 1:
-                result += words_original_case[decode_idx] + punctuation_map[y_predict[i].item()] + ' '
+                identified_class = y_predict[i].item()
+                target_punctuation = punctuation_map[identified_class]
+                target_word = words_original_case[decode_idx]
+                transform_function = function_map[identified_class]
+                result += transform_function(target_word) + target_punctuation + ' '
                 decode_idx += 1
 
     print('Punctuated text')
