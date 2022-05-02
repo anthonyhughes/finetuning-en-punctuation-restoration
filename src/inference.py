@@ -1,5 +1,6 @@
 import re
 import torch
+import csv
 
 import argparse
 from model import DeepPunctuation
@@ -26,7 +27,8 @@ token_style = MODELS[args.pretrained_model][3]
 model_save_path = args.weight_path
 
 # Model
-device = torch.device('cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu')
+# device = torch.device('cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu')
+device = torch.device('cpu')
 deep_punctuation = DeepPunctuation(args.pretrained_model, freeze_bert=False, lstm_dim=args.lstm_dim)
 deep_punctuation.to(device)
 
@@ -40,69 +42,76 @@ def to_titlecase(word):
 
 
 def inference():
-    deep_punctuation.load_state_dict(torch.load(model_save_path))
+    print('Loading model for inference')
+    deep_punctuation.load_state_dict(torch.load(model_save_path, map_location=device))
     deep_punctuation.eval()
+    print('Done')
 
     with open(args.user_input, 'r', encoding='utf-8') as f:
-        text = f.read()
-    text = re.sub(r"[,:\-–.!;?]", '', text)
-    words_original_case = text.split()
-    words = text.lower().split()
+        csv_reader = csv.DictReader(f)
 
-    word_pos = 0
-    sequence_len = args.sequence_length
-    result = ""
-    decode_idx = 0
-    punctuation_map = {0: '', 1: ',', 2: '.', 3: '', 4: '.', 5: ','}
-    function_map = {0: infer_nothing, 1: infer_nothing, 2: infer_nothing, 3: to_titlecase, 4: to_titlecase, 5: to_titlecase}
+        for row in csv_reader:
+            line = row['02_bilstm']
+            line = re.sub(r"[,:\-–.!;?]", '', line)
+            words_original_case = line.split()
+            words = line.lower().split()
 
-    while word_pos < len(words):
-        x = [TOKEN_IDX[token_style]['START_SEQ']]
-        y_mask = [0]
+            word_pos = 0
+            sequence_len = args.sequence_length
+            result = ""
+            decode_idx = 0
+            punctuation_map = {0: '', 1: ',', 2: '.', 3: '', 4: '.', 5: ','}
+            function_map = {0: infer_nothing, 1: infer_nothing, 2: infer_nothing, 3: to_titlecase, 4: to_titlecase, 5: to_titlecase}
 
-        while len(x) < sequence_len and word_pos < len(words):
-            tokens = tokenizer.tokenize(words[word_pos])
-            if len(tokens) + len(x) >= sequence_len:
-                break
-            else:
-                for i in range(len(tokens) - 1):
-                    x.append(tokenizer.convert_tokens_to_ids(tokens[i]))
-                    y_mask.append(0)
-                x.append(tokenizer.convert_tokens_to_ids(tokens[-1]))
-                y_mask.append(1)
-                word_pos += 1
+            while word_pos < len(words):
+                x = [TOKEN_IDX[token_style]['START_SEQ']]
+                y_mask = [0]
 
-        x.append(TOKEN_IDX[token_style]['END_SEQ'])
-        y_mask.append(0)
+                while len(x) < sequence_len and word_pos < len(words):
+                    tokens = tokenizer.tokenize(words[word_pos])
+                    if len(tokens) + len(x) >= sequence_len:
+                        break
+                    else:
+                        for i in range(len(tokens) - 1):
+                            x.append(tokenizer.convert_tokens_to_ids(tokens[i]))
+                            y_mask.append(0)
+                        x.append(tokenizer.convert_tokens_to_ids(tokens[-1]))
+                        y_mask.append(1)
+                        word_pos += 1
 
-        if len(x) < sequence_len:
-            x = x + [TOKEN_IDX[token_style]['PAD'] for _ in range(sequence_len - len(x))]
-            y_mask = y_mask + [0 for _ in range(sequence_len - len(y_mask))]
-        attn_mask = [1 if token != TOKEN_IDX[token_style]['PAD'] else 0 for token in x]
+                x.append(TOKEN_IDX[token_style]['END_SEQ'])
+                y_mask.append(0)
 
-        x = torch.tensor(x).reshape(1, -1)
-        y_mask = torch.tensor(y_mask)
-        attn_mask = torch.tensor(attn_mask).reshape(1, -1)
-        x, attn_mask, y_mask = x.to(device), attn_mask.to(device), y_mask.to(device)
+                if len(x) < sequence_len:
+                    x = x + [TOKEN_IDX[token_style]['PAD'] for _ in range(sequence_len - len(x))]
+                    y_mask = y_mask + [0 for _ in range(sequence_len - len(y_mask))]
+                attn_mask = [1 if token != TOKEN_IDX[token_style]['PAD'] else 0 for token in x]
 
-        with torch.no_grad():
-            y_predict = deep_punctuation(x, attn_mask)
-            y_predict = y_predict.view(-1, y_predict.shape[2])
-            y_predict = torch.argmax(y_predict, dim=1).view(-1)
+                x = torch.tensor(x).reshape(1, -1)
+                y_mask = torch.tensor(y_mask)
+                attn_mask = torch.tensor(attn_mask).reshape(1, -1)
+                x, attn_mask, y_mask = x.to(device), attn_mask.to(device), y_mask.to(device)
 
-        for i in range(y_mask.shape[0]):
-            if y_mask[i] == 1:
-                identified_class = y_predict[i].item()
-                target_punctuation = punctuation_map[identified_class]
-                target_word = words_original_case[decode_idx]
-                transform_function = function_map[identified_class]
-                result += transform_function(target_word) + target_punctuation + ' '
-                decode_idx += 1
+                with torch.no_grad():
+                    y_predict = deep_punctuation(x, attn_mask)
+                    y_predict = y_predict.view(-1, y_predict.shape[2])
+                    y_predict = torch.argmax(y_predict, dim=1).view(-1)
 
-    print('Punctuated text')
-    print(result)
-    with open(args.out_file, 'w', encoding='utf-8') as f:
-        f.write(result)
+                for i in range(y_mask.shape[0]):
+                    if y_mask[i] == 1:
+                        identified_class = y_predict[i].item()
+                        target_punctuation = punctuation_map[identified_class]
+                        target_word = words_original_case[decode_idx]
+                        transform_function = function_map[identified_class]
+                        result += transform_function(target_word) + target_punctuation + ' '
+                        decode_idx += 1
+
+            print('Punctuated text')
+            print(result)
+            with open(args.out_file, 'a', encoding='utf-8') as f:
+                f.write(line + ",")
+                f.write("\"" + result + "\"")
+                f.write("\n")
 
 
 if __name__ == '__main__':
