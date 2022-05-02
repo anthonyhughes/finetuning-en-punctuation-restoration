@@ -27,8 +27,7 @@ token_style = MODELS[args.pretrained_model][3]
 model_save_path = args.weight_path
 
 # Model
-# device = torch.device('cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu')
-device = torch.device('cpu')
+device = torch.device('cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu')
 deep_punctuation = DeepPunctuation(args.pretrained_model, freeze_bert=False, lstm_dim=args.lstm_dim)
 deep_punctuation.to(device)
 
@@ -106,8 +105,7 @@ def inference():
                         result += transform_function(target_word) + target_punctuation + ' '
                         decode_idx += 1
 
-            print('Punctuated text')
-            print(result)
+            print('Storing punctuated text')
             with open(args.out_file, 'a', encoding='utf-8') as f:
                 f.write(line + ",")
                 f.write("\"" + result + "\"")
