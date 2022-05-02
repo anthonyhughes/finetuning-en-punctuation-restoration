@@ -49,8 +49,9 @@ def inference():
     with open(args.user_input, 'r', encoding='utf-8') as f:
         csv_reader = csv.DictReader(f)
 
+        count = 0
         for row in csv_reader:
-            line = row['02_bilstm']
+            line = row['01_nb']
             line = re.sub(r"[,:\-–.!;?]", '', line)
             words_original_case = line.split()
             words = line.lower().split()
@@ -60,7 +61,8 @@ def inference():
             result = ""
             decode_idx = 0
             punctuation_map = {0: '', 1: ',', 2: '.', 3: '', 4: '.', 5: ','}
-            function_map = {0: infer_nothing, 1: infer_nothing, 2: infer_nothing, 3: to_titlecase, 4: to_titlecase, 5: to_titlecase}
+            function_map = {0: infer_nothing, 1: infer_nothing, 2: infer_nothing, 3: to_titlecase, 4: to_titlecase,
+                            5: to_titlecase}
 
             while word_pos < len(words):
                 x = [TOKEN_IDX[token_style]['START_SEQ']]
@@ -105,7 +107,8 @@ def inference():
                         result += transform_function(target_word) + target_punctuation + ' '
                         decode_idx += 1
 
-            print('Storing punctuated text')
+            print(f'Storing punctuated text - {count}')
+            count += 1
             with open(args.out_file, 'a', encoding='utf-8') as f:
                 f.write(line + ",")
                 f.write("\"" + result + "\"")
