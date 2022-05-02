@@ -54,7 +54,7 @@ def inference():
     result = ""
     decode_idx = 0
     punctuation_map = {0: '', 1: ',', 2: '.', 3: '', 4: '.', 5: ','}
-    function_map = {0: infer_nothing, 1: infer_nothing, 2: to_titlecase, 3: to_titlecase, 4: to_titlecase}
+    function_map = {0: infer_nothing, 1: infer_nothing, 2: infer_nothing, 3: to_titlecase, 4: to_titlecase, 5: to_titlecase}
 
     while word_pos < len(words):
         x = [TOKEN_IDX[token_style]['START_SEQ']]
