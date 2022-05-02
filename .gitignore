@@ -1,2 +1,4 @@
 .idea/
 out/
+data/e2e-inference-results.csv
+data/space_restoration_final.csv
