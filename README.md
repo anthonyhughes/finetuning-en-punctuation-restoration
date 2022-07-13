@@ -5,8 +5,8 @@ This repository is an extension of the paper [*Punctuation Restoration using Tra
 
 ## Data
 
-#### English
-English datasets are provided in `data/en` directory. These are collected from [here](https://drive.google.com/file/d/0B13Cc1a7ebTuMElFWGlYcUlVZ0k/view).
+#### Datasets
+TedTalk datasets are provided in `data` directory.
 
 
 ## Model Architecture
