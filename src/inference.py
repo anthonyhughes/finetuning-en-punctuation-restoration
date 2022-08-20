@@ -53,7 +53,7 @@ def inference():
 
         count = 0
         for row in csv_reader:
-            line = row['01_nb']
+            line = row[args.target_inference_column]
             line = re.sub(r"[,:\-–.!;?]", '', line)
             words_original_case = line.split()
             words = line.lower().split()
