@@ -16,6 +16,8 @@ parser.add_argument('--weight-path', default='out/weights.pt', type=str, help='m
 parser.add_argument('--sequence-length', default=256, type=int,
                     help='sequence length to use when preparing dataset (default 256)')
 parser.add_argument('--out-file', default='data/inference-result.txt', type=str, help='output file location')
+parser.add_argument('--target-inference-column', default='results', type=str,
+                    help='target column in file required for inference')
 
 args = parser.parse_args()
 
